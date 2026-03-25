@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACAD Online Tuition Center – Chennai</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  
+  <style>
+    :root {
+      --bg-primary: #0a0f1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a2332;
+      --fg-primary: #f8fafc;
+      --fg-secondary: #94a3b8;
+      --fg-muted: #64748b;
+      --accent-gold: #f59e0b;
+      --accent-gold-light: #fbbf24;
+      --accent-emerald: #10b981;
+      --border-color: #1e293b;
+      --glow-gold: rgba(245, 158, 11, 0.3);
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-primary);
+      color: var(--fg-primary);
+      overflow-x: hidden;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    .content-wrapper {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 50%, #fcd34d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .glass-card {
+      background: rgba(26, 35, 50, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .glow-border {
+      position: relative;
+    }
+    
+    .glow-border::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(135deg, var(--accent-gold), transparent, var(--accent-emerald));
+      border-radius: inherit;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .glow-border:hover::before {
+      opacity: 1;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-gold) 0%, #d97706 100%);
+      color: #0a0f1a;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.5s ease, height 0.5s ease;
+    }
+    
+    .btn-primary:hover::after {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px var(--glow-gold);
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--accent-gold);
+      color: var(--accent-gold);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: var(--accent-gold);
+      color: var(--bg-primary);
+    }
+    
+    .class-card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .class-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 60px rgba(245, 158, 11, 0.15);
+    }
+    
+    .class-card.selected {
+      border-color: var(--accent-gold);
+      background: rgba(245, 158, 11, 0.1);
+    }
+    
+    .floating-notification {
+      animation: slideInRight 0.5s ease-out;
+    }
+    
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px var(--glow-gold);
+      }
+      50% {
+        box-shadow: 0 0 40px var(--glow-gold), 0 0 60px rgba(245, 158, 11, 0.2);
+      }
+    }
+    
+    .pulse-animation {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .stagger-1 { transition-delay: 0.1s; }
+    .stagger-2 { transition-delay: 0.2s; }
+    .stagger-3 { transition-delay: 0.3s; }
+    .stagger-4 { transition-delay: 0.4s; }
+    .stagger-5 { transition-delay: 0.5s; }
+    .stagger-6 { transition-delay: 0.6s; }
+    
+    .chatbot-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+    }
+    
+    .chat-window {
+      position: absolute;
+      bottom: 80px;
+      right: 0;
+      width: 380px;
+      max-width: calc(100vw - 48px);
+      max-height: 500px;
+      border-radius: 16px;
+      overflow: hidden;
+      transform: scale(0.8);
+      opacity: 0;
+      transform-origin: bottom right;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+    
+    .chat-window.open {
+      transform: scale(1);
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .modal-content {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      z-index: 2001;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .modal-overlay.open + .modal-content,
+    .modal-content.open {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .input-field {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+    
+    .input-field:focus {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+      outline: none;
+    }
+    
+    .counter-value {
+      transition: all 0.3s ease;
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .chat-window {
+        width: calc(100vw - 48px);
+        right: -12px;
+      }
+    }
+    
+    .typing-indicator span {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--accent-gold);
+      border-radius: 50%;
+      margin: 0 2px;
+      animation: typing 1.4s infinite ease-in-out both;
+    }
+    
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes typing {
+      0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.5;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    .stars-bg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.4), transparent),
+        radial-gradient(2px 2px at 130px 80px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(1px 1px at 160px 120px, rgba(255,255,255,0.3), transparent);
+      background-repeat: repeat;
+      background-size: 200px 200px;
+      opacity: 0.5;
+    }
+    
+    .logo-img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      border-radius: 50%;
+      background: white;
+      padding: 2px;
+    }
+    
+    .logo-large {
+      width: 48px;
+      height: 48px;
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-container"></div>
+  
+  <div class="content-wrapper">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-card">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <img src="https://z-cdn-media.chatglm.cn/files/51622c02-6c73-46b3-9dd8-39ace4d36283.png?auth_key=1874410460-d6c19b32498a4a07a3830267815450c0-0-04bc33fe1404a69faab0e603db16f45d" alt="ACAD Logo" class="logo-img">
+            <span class="font-bold text-xl font-['Space_Grotesk']">ACAD</span>
+          </div>
+          
+          <div class="hidden md:flex items-center gap-8">
+            <a href="#programs" class="text-sm text-gray-300 hover:text-white transition-colors">Programs</a>
+            <a href="#classes" class="text-sm text-gray-300 hover:text-white transition-colors">Classes</a>
+            <a href="#features" class="text-sm text-gray-300 hover:text-white transition-colors">Features</a>
+            <a href="#testimonials" class="text-sm text-gray-300 hover:text-white transition-colors">Reviews</a>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <button id="loginBtn" class="btn-secondary px-4 py-2 rounded-lg text-sm">
+              Login
+            </button>
+            <button id="enrollNavBtn" class="btn-primary px-4 py-2 rounded-lg text-sm hidden sm:block">
+              Enroll Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- Floating Notification -->
+    <div id="floatingNotification" class="fixed top-20 right-4 z-40 glass-card rounded-lg p-3 flex items-center gap-3 floating-notification max-w-xs">
+      <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <p class="text-sm text-gray-300"><span class="font-semibold text-white">A*** from Chennai</span> has enrolled</p>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="min-h-screen flex items-center justify-center relative px-4 pt-16">
+      <div class="stars-bg"></div>
+      
+      <div class="max-w-5xl mx-auto text-center relative">
+        <div class="reveal">
+          <span class="inline-block px-4 py-1.5 rounded-full text-sm font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-6">
+            Trusted by 1000+ Students Across Chennai
+          </span>
+        </div>
+        
+        <h1 class="reveal stagger-1 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
+          Empowering Students to<br>
+          <span class="gradient-text">Achieve Academic Excellence</span>
+        </h1>
+        
+        <p class="reveal stagger-2 text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+          Unlock Your Potential to Score High Marks with our Concept-Based Learning Approach
+        </p>
+        
+        <div class="reveal stagger-3 flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+          <button id="heroEnrollBtn" class="btn-primary px-8 py-4 rounded-xl text-lg font-semibold w-full sm:w-auto pulse-animation">
+            Start Your Success Journey
+          </button>
+          <button class="btn-secondary px-8 py-4 rounded-xl text-lg w-full sm:w-auto flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            Watch Demo
+          </button>
+        </div>
+        
+        <!-- Stats -->
+        <div class="reveal stagger-4 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div class="glass-card rounded-xl p-4 sm:p-6">
+            <div class="text-2xl sm:text-3xl font-bold gradient-text counter-value" data-target="100">0</div>
+            <div class="text-xs sm:text-sm text-gray-400 mt-1">Core Concepts</div>
+          </div>
+          <div class="glass-card rounded-xl p-4 sm:p-6">
+            <div class="text-2xl sm:text-3xl font-bold gradient-text counter-value" data-target="100">0</div>
+            <div class="text-xs sm:text-sm text-gray-400 mt-1">Problem Techniques</div>
+          </div>
+          <div class="glass-card rounded-xl p-4 sm:p-6">
+            <div class="text-2xl sm:text-3xl font-bold gradient-text counter-value" data-target="50">0</div>
+            <div class="text-xs sm:text-sm text-gray-400 mt-1">Expert Faculty</div>
+          </div>
+          <div class="glass-card rounded-xl p-4 sm:p-6">
+            <div class="text-2xl sm:text-3xl font-bold gradient-text counter-value" data-target="95">0</div>
+            <div class="text-xs sm:text-sm text-gray-400 mt-1">Success Rate %</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scroll Indicator -->
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 float-animation">
+        <div class="w-6 h-10 rounded-full border-2 border-gray-600 flex items-start justify-center p-2">
+          <div class="w-1 h-2 bg-amber-400 rounded-full animate-bounce"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 px-4 relative">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+          <h2 class="reveal text-3xl sm:text-4xl font-bold mb-4">Why Choose ACAD</h2>
+          <p class="reveal stagger-1 text-gray-400 max-w-2xl mx-auto">Our unique approach to education sets us apart</p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="reveal stagger-1 glass-card rounded-2xl p-6 glow-border group cursor-pointer">
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Concept-Based Learning</h3>
+            <p class="text-gray-400">Build strong foundations with our unique approach that focuses on understanding, not memorizing.</p>
+          </div>
+          
+          <div class="reveal stagger-2 glass-card rounded-2xl p-6 glow-border group cursor-pointer">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Expert Faculty</h3>
+            <p class="text-gray-400">Learn from experienced mentors who have guided thousands of students to academic success.</p>
+          </div>
+          
+          <div class="reveal stagger-3 glass-card rounded-2xl p-6 glow-border group cursor-pointer">
+            <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Test Series</h3>
+            <p class="text-gray-400">Regular assessments and mock tests to track progress and improve exam performance.</p>
+          </div>
+          
+          <div class="reveal stagger-4 glass-card rounded-2xl p-6 glow-border group cursor-pointer">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Flexible Batches</h3>
+            <p class="text-gray-400">Weekday and weekend options to fit your schedule. Learn at your own pace.</p>
+          </div>
+          
+          <div class="reveal stagger-5 glass-card rounded-2xl p-6 glow-border group cursor-pointer">
+            <div class="w-12 h-12 rounded-xl bg-rose-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">NEET/JEE Foundation</h3>
+            <p class="text-gray-400">Special foundation courses for Classes 8-10 to prepare for competitive exams early.</p>
+          </div>
+          
+          <div class="reveal stagger-6 glass-card rounded-2xl p-6 glow-border group cursor-pointer">
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Board Exam Prep</h3>
+            <p class="text-gray-400">Comprehensive preparation for CBSE and State Board examinations with proven results.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Class Selection Section -->
+    <section id="classes" class="py-20 px-4 relative">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+          <h2 class="reveal text-3xl sm:text-4xl font-bold mb-4">Choose Your Class</h2>
+          <p class="reveal stagger-1 text-gray-400 max-w-2xl mx-auto">Select your class for the 2026-27 academic year</p>
+        </div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6" id="classGrid">
+          <!-- Classes will be rendered by JS -->
+        </div>
+        
+        <div class="reveal mt-12 text-center">
+          <div class="glass-card rounded-2xl p-8 max-w-2xl mx-auto">
+            <h3 class="text-xl font-semibold mb-4">Special Focus Programs</h3>
+            <div class="grid sm:grid-cols-3 gap-4 text-sm">
+              <div class="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                <div class="font-medium text-amber-400 mb-1">Board Exam Prep</div>
+                <div class="text-gray-400">CBSE / State Board</div>
+              </div>
+              <div class="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="font-medium text-emerald-400 mb-1">NEET/JEE Foundation</div>
+                <div class="text-gray-400">Classes 8-10</div>
+              </div>
+              <div class="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                <div class="font-medium text-blue-400 mb-1">+1 & +2 Mastery</div>
+                <div class="text-gray-400">With Test Series</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20 px-4 relative">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+          <h2 class="reveal text-3xl sm:text-4xl font-bold mb-4">Highly Rated by Students</h2>
+          <p class="reveal stagger-1 text-gray-400 max-w-2xl mx-auto">See what our students and parents say about us</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-6" id="testimonialGrid">
+          <!-- Testimonials rendered by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 px-4 relative">
+      <div class="max-w-4xl mx-auto">
+        <div class="reveal glass-card rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+          <div class="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+          
+          <div class="relative">
+            <span class="inline-block px-4 py-1.5 rounded-full text-sm font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20 mb-6">
+              Limited Seats Available
+            </span>
+            
+            <h2 class="text-3xl sm:text-4xl font-bold mb-4">Start Your Success Journey</h2>
+            <p class="text-gray-400 mb-8 max-w-xl mx-auto">
+              Affordable fees with scholarship options available. Join ACAD today and transform your academic future.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button id="ctaEnrollBtn" class="btn-primary px-8 py-4 rounded-xl text-lg font-semibold w-full sm:w-auto">
+                Enroll Now
+              </button>
+              <button id="ctaLoginBtn" class="btn-secondary px-8 py-4 rounded-xl text-lg w-full sm:w-auto">
+                Already a Student? Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-4 border-t border-gray-800">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="flex items-center gap-3">
+            <img src="https://z-cdn-media.chatglm.cn/files/51622c02-6c73-46b3-9dd8-39ace4d36283.png?auth_key=1874410460-d6c19b32498a4a07a3830267815450c0-0-04bc33fe1404a69faab0e603db16f45d" alt="ACAD Logo" class="logo-img">
+            <span class="font-bold text-lg">ACAD Online Tuition Center</span>
+          </div>
+          
+          <div class="text-sm text-gray-400 text-center">
+            Chennai, Tamil Nadu | Empowering Students Since 2015
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <a href="#" class="w-10 h-10 rounded-lg glass-card flex items-center justify-center hover:bg-amber-500/10 transition-colors" aria-label="Facebook">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-lg glass-card flex items-center justify-center hover:bg-amber-500/10 transition-colors" aria-label="Instagram">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-lg glass-card flex items-center justify-center hover:bg-amber-500/10 transition-colors" aria-label="YouTube">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Chatbot Widget -->
+  <div class="chatbot-container">
+    <div id="chatWindow" class="chat-window glass-card">
+      <div class="p-4 border-b border-gray-700 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="https://z-cdn-media.chatglm.cn/files/51622c02-6c73-46b3-9dd8-39ace4d36283.png?auth_key=1874410460-d6c19b32498a4a07a3830267815450c0-0-04bc33fe1404a69faab0e603db16f45d" alt="ACAD Logo" class="logo-img logo-large">
+          <div>
+            <div class="font-semibold">ACAD Assistant</div>
+            <div class="text-xs text-emerald-400 flex items-center gap-1">
+              <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+              AI Powered
+            </div>
+          </div>
+        </div>
+        <button id="closeChat" class="w-8 h-8 rounded-lg hover:bg-gray-700 flex items-center justify-center transition-colors" aria-label="Close chat">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <div id="chatMessages" class="h-72 overflow-y-auto p-4 space-y-4">
+        <!-- Messages rendered by JS -->
+      </div>
+      
+      <div class="p-4 border-t border-gray-700">
+        <form id="chatForm" class="flex gap-2">
+          <input type="text" id="chatInput" class="input-field flex-1 px-4 py-2 rounded-lg text-sm" placeholder="Type your message..." autocomplete="off">
+          <button type="submit" class="btn-primary px-4 py-2 rounded-lg" aria-label="Send message">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <button id="chatToggle" class="w-16 h-16 rounded-full btn-primary flex items-center justify-center shadow-2xl pulse-animation" aria-label="Open chat">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Login Modal -->
+  <div id="loginOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="loginTitle"></div>
+  <div id="loginModal" class="modal-content w-full max-w-md mx-4">
+    <div class="glass-card rounded-2xl p-8">
+      <div class="text-center mb-6">
+        <img src="https://z-cdn-media.chatglm.cn/files/51622c02-6c73-46b3-9dd8-39ace4d36283.png?auth_key=1874410460-d6c19b32498a4a07a3830267815450c0-0-04bc33fe1404a69faab0e603db16f45d" alt="ACAD Logo" class="w-16 h-16 mx-auto mb-4 rounded-full bg-white p-1 object-contain">
+        <h2 id="loginTitle" class="text-2xl font-bold mb-2">Welcome Back</h2>
+        <p class="text-gray-400">Sign in to your ACAD account</p>
+      </div>
+      
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label for="loginEmail" class="block text-sm font-medium mb-2">Email Address</label>
+          <input type="email" id="loginEmail" class="input-field w-full px-4 py-3 rounded-lg" placeholder="you@example.com" required>
+        </div>
+        <div>
+          <label for="loginPassword" class="block text-sm font-medium mb-2">Password</label>
+          <input type="password" id="loginPassword" class="input-field w-full px-4 py-3 rounded-lg" placeholder="Enter your password" required>
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-amber-500 focus:ring-amber-500">
+            <span class="text-gray-400">Remember me</span>
+          </label>
+          <a href="#" class="text-amber-400 hover:text-amber-300">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-primary w-full py-3 rounded-lg font-semibold">
+          Sign In
+        </button>
+      </form>
+      
+      <div class="mt-6">
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-700"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-gray-800 text-gray-400">Or continue with</span>
+          </div>
+        </div>
+        
+        <div class="mt-4 grid grid-cols-2 gap-3">
+          <button class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg glass-card hover:bg-gray-700 transition-colors">
+            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            <span>Google</span>
+          </button>
+          <button class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg glass-card hover:bg-gray-700 transition-colors">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <span>GitHub</span>
+          </button>
+        </div>
+      </div>
+      
+      <p class="mt-6 text-center text-sm text-gray-400">
+        Don't have an account? <a href="#" id="showSignup" class="text-amber-400 hover:text-amber-300">Sign up</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div id="paymentOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="paymentTitle"></div>
+  <div id="paymentModal" class="modal-content w-full max-w-lg mx-4">
+    <div class="glass-card rounded-2xl p-8">
+      <div class="text-center mb-6">
+        <img src="https://z-cdn-media.chatglm.cn/files/51622c02-6c73-46b3-9dd8-39ace4d36283.png?auth_key=1874410460-d6c19b32498a4a07a3830267815450c0-0-04bc33fe1404a69faab0e603db16f45d" alt="ACAD Logo" class="w-14 h-14 mx-auto mb-4 rounded-full bg-white p-1 object-contain">
+        <h2 id="paymentTitle" class="text-2xl font-bold mb-2">Complete Enrollment</h2>
+        <p class="text-gray-400">Secure payment via PayU</p>
+      </div>
+      
+      <div id="selectedClassInfo" class="mb-6 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+        <!-- Selected class info rendered by JS -->
+      </div>
+      
+      <form id="paymentForm" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="studentName" class="block text-sm font-medium mb-2">Student Name</label>
+            <input type="text" id="studentName" class="input-field w-full px-4 py-3 rounded-lg" placeholder="Full name" required>
+          </div>
+          <div>
+            <label for="parentName" class="block text-sm font-medium mb-2">Parent/Guardian</label>
+            <input type="text" id="parentName" class="input-field w-full px-4 py-3 rounded-lg" placeholder="Parent name" required>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="studentEmail" class="block text-sm font-medium mb-2">Email</label>
+            <input type="email" id="studentEmail" class="input-field w-full px-4 py-3 rounded-lg" placeholder="Email address" required>
+          </div>
+          <div>
+            <label for="studentPhone" class="block text-sm font-medium mb-2">Phone</label>
+            <input type="tel" id="studentPhone" class="input-field w-full px-4 py-3 rounded-lg" placeholder="+91 XXXXX XXXXX" required>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium mb-2">Select Payment Plan</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="cursor-pointer">
+              <input type="radio" name="paymentPlan" value="full" class="sr-only peer" checked>
+              <div class="p-4 rounded-xl border border-gray-700 peer-checked:border-amber-500 peer-checked:bg-amber-500/5 transition-all">
+                <div class="font-semibold">Full Payment</div>
+                <div class="text-sm text-gray-400">Save 10%</div>
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="paymentPlan" value="emi" class="sr-only peer">
+              <div class="p-4 rounded-xl border border-gray-700 peer-checked:border-amber-500 peer-checked:bg-amber-500/5 transition-all">
+                <div class="font-semibold">EMI Options</div>
+                <div class="text-sm text-gray-400">3-6 months</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        
+        <div class="pt-4 border-t border-gray-700">
+          <div class="flex justify-between mb-2">
+            <span class="text-gray-400">Course Fee</span>
+            <span id="courseFee">Rs 15,000</span>
+          </div>
+          <div class="flex justify-between mb-2">
+            <span class="text-gray-400">Discount</span>
+            <span class="text-emerald-400" id="discount">- Rs 1,500</span>
+          </div>
+          <div class="flex justify-between font-semibold text-lg pt-2 border-t border-gray-700">
+            <span>Total Amount</span>
+            <span class="gradient-text" id="totalAmount">Rs 13,500</span>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn-primary w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+          Proceed to PayU Payment
+        </button>
+      </form>
+      
+      <p class="mt-4 text-center text-xs text-gray-500 flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+        </svg>
+        Secure payment powered by PayU
+      </p>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    
+	// ==========================================
+	// CONFIGURATION
+	// ==========================================
+	// REPLACE THESE WITH YOUR ACTUAL SUPABASE CREDENTIALS
+	const SUPABASE_URL = 'https://your-project-ref.supabase.co'; 
+	const SUPABASE_ANON_KEY = 'your-supabase-anon-key';
+
+	// Initialize Supabase Client
+	const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+	// API Endpoint (Relative path to our serverless function)
+	const API_ENDPOINT = '/api/chat';
+
+// ==========================================
+// SUPABASE AUTHENTICATION FUNCTIONS
+// ==========================================
+
+async function signInWithGoogle() {
+  const { data, error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+  if (error) console.error('Google Login Error:', error.message);
+}
+
+async function signInWithGithub() {
+  const { data, error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'github',
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+  if (error) console.error('GitHub Login Error:', error.message);
+}
+
+async function signInWithEmail(email, password) {
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password,
+  });
+  if (error) {
+    alert(error.message);
+  } else {
+    closeLoginModal();
+    checkUserSession(); // Update UI
+  }
+}
+
+async function signOut() {
+  const { error } = await supabaseClient.auth.signOut();
+  if (error) console.error('Logout error:', error.message);
+  location.reload();
+}
+
+async function checkUserSession() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  const loginBtn = document.getElementById('loginBtn');
+  
+  if (session) {
+    const user = session.user;
+    // User is logged in - Change button to show name or Logout
+    loginBtn.textContent = user.user_metadata.full_name || user.email.split('@')[0];
+    loginBtn.onclick = signOut; // Clicking again logs them out
+  } else {
+    loginBtn.textContent = 'Login';
+    loginBtn.onclick = openLoginModal;
+  }
+}
+
+// ==========================================
+// UPDATED CHATBOT FUNCTION
+// ==========================================
+
+async function callGroqAPI(userMessage) {
+  chatHistory.push({ role: 'user', content: userMessage });
+
+  try {
+    // Call your Vercel serverless function instead of Groq directly
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: chatHistory.slice(-10) })
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) throw new Error(data.error || 'API request failed');
+    
+    const assistantMessage = data.content;
+    chatHistory.push({ role: 'assistant', content: assistantMessage });
+    
+    return assistantMessage;
+  } catch (error) {
+    console.error('Chat Error:', error);
+    return "I'm having trouble connecting right now. Please call us at +91 98765 43210.";
+  }
+}
+
+
+
+    // ==========================================
+    // CONFIGURATION - Replace with your keys
+    // ==========================================
+    
+    // GROQ API KEY - Replace 'YOUR_GROQ_API_KEY' with your actual key
+    // SECURITY NOTE: For production, use a backend proxy to hide your API key
+    const GROQ_API_KEY = 'YOUR_GROQ_API_KEY';
+    const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+    const GROQ_MODEL = 'llama-3.1-8b-instant';
+    
+    // PayU Payment Link
+    const PAYU_PAYMENT_LINK = 'https://pmny.in/xJuAmT6XgxX7';
+    
+    // ==========================================
+    // DATA
+    // ==========================================
+    
+    const classData = [
+      { id: 6, name: 'Class 6', subjects: ['Maths', 'Science'], fee: 12000, color: '#f59e0b' },
+      { id: 7, name: 'Class 7', subjects: ['Maths', 'Science'], fee: 12000, color: '#10b981' },
+      { id: 8, name: 'Class 8', subjects: ['Maths', 'Science', 'Foundation'], fee: 15000, color: '#3b82f6' },
+      { id: 9, name: 'Class 9', subjects: ['Maths', 'Science', 'Foundation'], fee: 15000, color: '#8b5cf6' },
+      { id: 10, name: 'Class 10', subjects: ['Board Prep', 'NEET/JEE'], fee: 18000, color: '#ec4899' },
+      { id: 11, name: 'Class 11', subjects: ['Physics', 'Chemistry', 'Maths'], fee: 20000, color: '#14b8a6' },
+      { id: 12, name: 'Class 12', subjects: ['Board Prep', 'Entrance'], fee: 22000, color: '#f97316' },
+    ];
+    
+    const testimonialData = [
+      {
+        name: 'Priya S.',
+        role: 'Parent, Class 10',
+        rating: 5,
+        text: 'My daughter improved from 70% to 92% in just 6 months. The concept-based approach really works!',
+        avatar: 'P'
+      },
+      {
+        name: 'Rahul K.',
+        role: 'Student, Class 12',
+        rating: 5,
+        text: 'The faculty here are amazing. They cleared all my doubts and helped me crack JEE Mains with 95 percentile.',
+        avatar: 'R'
+      },
+      {
+        name: 'Lakshmi M.',
+        role: 'Parent, Class 8',
+        rating: 5,
+        text: 'Best tuition center in Chennai! The NEET foundation course is very well structured for young students.',
+        avatar: 'L'
+      }
+    ];
+    
+    // System prompt for the AI chatbot
+    const SYSTEM_PROMPT = `You are a helpful assistant for ACAD Online Tuition Center in Chennai. You help students and parents with queries about:
+
+- Course offerings: Maths, Science for Classes 6-12
+- NEET/JEE Foundation programs for Classes 8-10
+- Board Exam preparation (CBSE/State Board)
+- Fee structure: Rs 12,000 - Rs 22,000 depending on class
+- Flexible batch timings (Weekday evenings 4-8 PM, Weekends 9 AM-6 PM)
+- Scholarship options available for meritorious students
+- Free demo classes available
+
+Be friendly, helpful, and concise. Always encourage students to enroll. Contact: +91 98765 43210`;
+    
+    // ==========================================
+    // THREE.JS BACKGROUND
+    // ==========================================
+    
+    let scene, camera, renderer, particles;
+    
+    function initThreeJS() {
+      const container = document.getElementById('canvas-container');
+      
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 50;
+      
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+      
+      // Create particles
+      const particleCount = 800;
+      const positions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
+      
+      const goldColor = new THREE.Color('#f59e0b');
+      const emeraldColor = new THREE.Color('#10b981');
+      
+      for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 150;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 150;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+        
+        const color = Math.random() > 0.7 ? goldColor : emeraldColor;
+        colors[i * 3] = color.r;
+        colors[i * 3 + 1] = color.g;
+        colors[i * 3 + 2] = color.b;
+      }
+      
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      
+      const material = new THREE.PointsMaterial({
+        size: 0.8,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.6,
+        sizeAttenuation: true
+      });
+      
+      particles = new THREE.Points(geometry, material);
+      scene.add(particles);
+      
+      animate();
+    }
+    
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      if (particles) {
+        particles.rotation.x += 0.0003;
+        particles.rotation.y += 0.0005;
+      }
+      
+      renderer.render(scene, camera);
+    }
+    
+    function onWindowResize() {
+      if (camera && renderer) {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    }
+    
+    window.addEventListener('resize', onWindowResize);
+    
+    // ==========================================
+    // RENDER FUNCTIONS
+    // ==========================================
+    
+    function renderClasses() {
+      const grid = document.getElementById('classGrid');
+      if (!grid) return;
+      
+      grid.innerHTML = classData.map((cls, index) => `
+        <div class="reveal stagger-${(index % 6) + 1} class-card glass-card rounded-2xl p-6 cursor-pointer border-2 border-transparent" data-class="${cls.id}" data-fee="${cls.fee}" style="--class-color: ${cls.color}">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-2xl font-bold" style="color: ${cls.color}">${cls.name}</span>
+            <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 border-gray-600 class-checkbox">
+              <svg class="w-4 h-4 hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="text-sm text-gray-400 mb-3">${cls.subjects.join(' • ')}</div>
+          <div class="font-semibold">Rs ${cls.fee.toLocaleString()}</div>
+        </div>
+      `).join('');
+      
+      // Add click handlers
+      document.querySelectorAll('.class-card').forEach(card => {
+        card.addEventListener('click', () => selectClass(card));
+      });
+    }
+    
+    function renderTestimonials() {
+      const grid = document.getElementById('testimonialGrid');
+      if (!grid) return;
+      
+      grid.innerHTML = testimonialData.map((t, index) => `
+        <div class="reveal stagger-${index + 1} glass-card rounded-2xl p-6">
+          <div class="flex items-center gap-1 mb-4">
+            ${Array(t.rating).fill().map(() => `
+              <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            `).join('')}
+          </div>
+          <p class="text-gray-300 mb-4">"${t.text}"</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+              <span class="font-bold text-white">${t.avatar}</span>
+            </div>
+            <div>
+              <div class="font-semibold">${t.name}</div>
+              <div class="text-sm text-gray-400">${t.role}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // ==========================================
+    // CLASS SELECTION
+    // ==========================================
+    
+    let selectedClass = null;
+    
+    function selectClass(card) {
+      document.querySelectorAll('.class-card').forEach(c => {
+        c.classList.remove('selected');
+        c.querySelector('.check-icon').classList.add('hidden');
+        c.querySelector('.class-checkbox').style.borderColor = '';
+        c.querySelector('.class-checkbox').style.background = '';
+      });
+      
+      card.classList.add('selected');
+      card.querySelector('.check-icon').classList.remove('hidden');
+      const color = card.style.getPropertyValue('--class-color');
+      card.querySelector('.class-checkbox').style.borderColor = color;
+      card.querySelector('.class-checkbox').style.background = color;
+      
+      selectedClass = {
+        id: card.dataset.class,
+        name: card.querySelector('.text-2xl').textContent,
+        fee: parseInt(card.dataset.fee)
+      };
+      
+      // Show payment modal after a short delay
+      setTimeout(() => openPaymentModal(), 300);
+    }
+    
+    // ==========================================
+    // MODAL FUNCTIONS
+    // ==========================================
+    
+    function openLoginModal() {
+      document.getElementById('loginOverlay').classList.add('open');
+      document.getElementById('loginModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeLoginModal() {
+      document.getElementById('loginOverlay').classList.remove('open');
+      document.getElementById('loginModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    
+    function openPaymentModal() {
+      if (!selectedClass) {
+        alert('Please select a class first');
+        return;
+      }
+      
+      document.getElementById('selectedClassInfo').innerHTML = `
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="font-semibold">${selectedClass.name}</div>
+            <div class="text-sm text-gray-400">Academic Year 2026-27</div>
+          </div>
+          <div class="text-right">
+            <div class="font-semibold gradient-text">Rs ${selectedClass.fee.toLocaleString()}</div>
+            <div class="text-xs text-gray-400">Full Course</div>
+          </div>
+        </div>
+      `;
+      
+      updatePaymentAmount(selectedClass.fee);
+      
+      document.getElementById('paymentOverlay').classList.add('open');
+      document.getElementById('paymentModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closePaymentModal() {
+      document.getElementById('paymentOverlay').classList.remove('open');
+      document.getElementById('paymentModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    
+    function updatePaymentAmount(fee) {
+      const plan = document.querySelector('input[name="paymentPlan"]:checked').value;
+      const discount = plan === 'full' ? Math.round(fee * 0.1) : 0;
+      const total = fee - discount;
+      
+      document.getElementById('courseFee').textContent = `Rs ${fee.toLocaleString()}`;
+      document.getElementById('discount').textContent = discount > 0 ? `- Rs ${discount.toLocaleString()}` : 'Rs 0';
+      document.getElementById('totalAmount').textContent = `Rs ${total.toLocaleString()}`;
+    }
+    
+    // ==========================================
+    // GROQ AI CHATBOT
+    // ==========================================
+    
+    let chatOpen = false;
+    const chatHistory = [];
+    
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      document.getElementById('chatWindow').classList.toggle('open', chatOpen);
+      
+      if (chatOpen && chatHistory.length === 0) {
+        addBotMessage('Welcome to ACAD Online Tuition Center! I\'m your AI assistant. How can I help you today?');
+        chatHistory.push({ role: 'assistant', content: 'Welcome to ACAD Online Tuition Center! I\'m your AI assistant. How can I help you today?' });
+      }
+    }
+    
+    function addBotMessage(text) {
+      const container = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.className = 'flex gap-3';
+      div.innerHTML = `
+        <img src="https://z-cdn-media.chatglm.cn/files/51622c02-6c73-46b3-9dd8-39ace4d36283.png?auth_key=1874410460-d6c19b32498a4a07a3830267815450c0-0-04bc33fe1404a69faab0e603db16f45d" alt="ACAD" class="w-8 h-8 rounded-full bg-white p-0.5 object-contain flex-shrink-0">
+        <div class="bg-gray-700/50 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[80%]">
+          <p class="text-sm">${text}</p>
+        </div>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    function addUserMessage(text) {
+      const container = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.className = 'flex gap-3 justify-end';
+      div.innerHTML = `
+        <div class="bg-amber-500/20 rounded-2xl rounded-tr-sm px-4 py-2 max-w-[80%]">
+          <p class="text-sm">${text}</p>
+        </div>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    function showTypingIndicator() {
+      const container = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.className = 'flex gap-3 typing-message';
+      div.innerHTML = `
+        <img src="https://z-cdn-media.chatglm.cn/files/51622c02-6c73-46b3-9dd8-39ace4d36283.png?auth_key=1874410460-d6c19b32498a4a07a3830267815450c0-0-04bc33fe1404a69faab0e603db16f45d" alt="ACAD" class="w-8 h-8 rounded-full bg-white p-0.5 object-contain flex-shrink-0">
+        <div class="bg-gray-700/50 rounded-2xl rounded-tl-sm px-4 py-3">
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    function removeTypingIndicator() {
+      const typing = document.querySelector('.typing-message');
+      if (typing) typing.remove();
+    }
+    
+    async function callGroqAPI(userMessage) {
+      // Check if API key is configured
+      if (GROQ_API_KEY === 'YOUR_GROQ_API_KEY' || !GROQ_API_KEY) {
+        return "I'd love to help! However, the AI feature needs to be configured with a Groq API key. Please contact ACAD at +91 98765 43210 for immediate assistance, or the admin can add the API key to enable AI responses.";
+      }
+      
+      // Add message to history
+      chatHistory.push({ role: 'user', content: userMessage });
+      
+      try {
+        const response = await fetch(GROQ_API_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: GROQ_MODEL,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              ...chatHistory.slice(-10) // Keep last 10 messages for context
+            ],
+            temperature: 0.7,
+            max_tokens: 500
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const assistantMessage = data.choices[0]?.message?.content || "I'm having trouble responding right now. Please try again or call us at +91 98765 43210.";
+        
+        // Add response to history
+        chatHistory.push({ role: 'assistant', content: assistantMessage });
+        
+        return assistantMessage;
+      } catch (error) {
+        console.error('Groq API Error:', error);
+        return "I'm having trouble connecting right now. Please call us at +91 98765 43210 for immediate assistance!";
+      }
+    }
+    
+    async function handleChatSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      if (!message) return;
+      
+      addUserMessage(message);
+      input.value = '';
+      
+      showTypingIndicator();
+      
+      // Call Groq API
+      const response = await callGroqAPI(message);
+      
+      removeTypingIndicator();
+      addBotMessage(response);
+    }
+    
+    // ==========================================
+    // COUNTER ANIMATION
+    // ==========================================
+    
+    function animateCounters() {
+      const counters = document.querySelectorAll('.counter-value');
+      
+      counters.forEach(counter => {
+        const target = parseInt(counter.dataset.target);
+        const duration = 2000;
+        const start = performance.now();
+        
+        function update(currentTime) {
+          const elapsed = currentTime - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = Math.round(eased * target);
+          
+          counter.textContent = current + '+';
+          
+          if (progress < 1) {
+            requestAnimationFrame(update);
+          }
+        }
+        
+        requestAnimationFrame(update);
+      });
+    }
+    
+    // ==========================================
+    // SCROLL REVEAL
+    // ==========================================
+    
+    function setupScrollReveal() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+      
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    }
+    
+    // ==========================================
+    // FLOATING NOTIFICATION
+    // ==========================================
+    
+    function showRandomNotification() {
+      const names = ['A***', 'K***', 'R***', 'S***', 'M***', 'P***'];
+      const areas = ['Chennai', 'Adyar', 'T. Nagar', 'Velachery', 'Anna Nagar', 'Nungambakkam'];
+      
+      const notification = document.getElementById('floatingNotification');
+      const name = names[Math.floor(Math.random() * names.length)];
+      const area = areas[Math.floor(Math.random() * areas.length)];
+      
+      notification.querySelector('p').innerHTML = `<span class="font-semibold text-white">${name} from ${area}</span> has enrolled`;
+      notification.style.display = 'flex';
+      
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 5000);
+    }
+    
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
+    
+    function setupEventListeners() {
+      // Login modal
+      document.getElementById('loginBtn').addEventListener('click', openLoginModal);
+      document.getElementById('ctaLoginBtn').addEventListener('click', openLoginModal);
+      document.getElementById('loginOverlay').addEventListener('click', closeLoginModal);
+      
+	// Google/GitHub Buttons
+	document.querySelectorAll('.grid.grid-cols-2 button')[0].addEventListener('click', signInWithGoogle);
+	document.querySelectorAll('.grid.grid-cols-2 button')[1].addEventListener('click', signInWithGithub);
+
+	// Email Login Form
+	document.getElementById('loginForm').addEventListener('submit', (e) => {
+  	e.preventDefault();
+  	const email = document.getElementById('loginEmail').value;
+  	const password = document.getElementById('loginPassword').value;
+  	signInWithEmail(email, password);
+	});
+
+
+      // Payment modal
+      document.getElementById('heroEnrollBtn').addEventListener('click', () => {
+        document.getElementById('classes').scrollIntoView({ behavior: 'smooth' });
+      });
+      document.getElementById('enrollNavBtn').addEventListener('click', () => {
+        document.getElementById('classes').scrollIntoView({ behavior: 'smooth' });
+      });
+      document.getElementById('ctaEnrollBtn').addEventListener('click', () => {
+        document.getElementById('classes').scrollIntoView({ behavior: 'smooth' });
+      });
+      document.getElementById('paymentOverlay').addEventListener('click', closePaymentModal);
+      
+      // Payment plan change
+      document.querySelectorAll('input[name="paymentPlan"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          if (selectedClass) {
+            updatePaymentAmount(selectedClass.fee);
+          }
+        });
+      });
+      
+      // Chat
+      document.getElementById('chatToggle').addEventListener('click', toggleChat);
+      document.getElementById('closeChat').addEventListener('click', toggleChat);
+      document.getElementById('chatForm').addEventListener('submit', handleChatSubmit);
+      
+      // Forms
+      document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Login functionality will connect to Supabase. Please configure your Supabase credentials.');
+      });
+      
+      // Payment form - Redirect to PayU
+      document.getElementById('paymentForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const studentName = document.getElementById('studentName').value;
+        const parentName = document.getElementById('parentName').value;
+        const email = document.getElementById('studentEmail').value;
+        const phone = document.getElementById('studentPhone').value;
+        
+        // Validate
+        if (!studentName || !parentName || !email || !phone) {
+          alert('Please fill in all fields');
+          return;
+        }
+        
+        // Store form data in localStorage for reference
+        const enrollmentData = {
+          studentName,
+          parentName,
+          email,
+          phone,
+          selectedClass: selectedClass?.name,
+          fee: selectedClass?.fee,
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem('acad_enrollment', JSON.stringify(enrollmentData));
+        
+        // Open PayU payment link in new tab
+        window.open(PAYU_PAYMENT_LINK, '_blank');
+        
+        // Close modal and show confirmation
+        closePaymentModal();
+        
+        setTimeout(() => {
+          alert('Thank you for enrolling! Please complete the payment in the opened window. You will receive a confirmation email shortly.');
+        }, 500);
+      });
+      
+      // Keyboard accessibility
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeLoginModal();
+          closePaymentModal();
+          if (chatOpen) toggleChat();
+        }
+      });
+    }
+    
+    // ==========================================
+    // INITIALIZE
+    // ==========================================
+    
+    function init() {
+      initThreeJS();
+      renderClasses();
+      renderTestimonials();
+      setupEventListeners();
+      setupScrollReveal();
+      
+	checkUserSession(); // Check if user is already logged in
+      // Animate counters when hero is visible
+      const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setTimeout(animateCounters, 500);
+            heroObserver.disconnect();
+          }
+        });
+      });
+      
+      const heroStats = document.querySelector('.reveal.stagger-4');
+      if (heroStats) heroObserver.observe(heroStats);
+      
+      // Show notifications periodically
+      setTimeout(showRandomNotification, 3000);
+      setInterval(showRandomNotification, 15000);
+    }
+    
+    // Wait for DOM
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
