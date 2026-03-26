@@ -1,3 +1,6 @@
+// Notice we use 'import' instead of 'require' because we set type: module
+import { verifyToken } from '@clerk/clerk-sdk-node';
+
 export default async function handler(req, res) {
   // 1. Set CORS Headers
   // This allows your frontend to communicate with this backend function
