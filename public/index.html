@@ -551,6 +551,27 @@
           </div>
         </div>
         
+        <!-- PAYMENT PLAN SELECTOR (Fixed Missing HTML) -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Select Payment Plan</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="cursor-pointer">
+              <input type="radio" name="paymentPlan" value="full" class="sr-only peer" checked>
+              <div class="p-4 rounded-xl border border-gray-700 peer-checked:border-amber-500 peer-checked:bg-amber-500/5 transition-all">
+                <div class="font-semibold">Full Payment</div>
+                <div class="text-sm text-gray-400">Save 10%</div>
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="paymentPlan" value="emi" class="sr-only peer">
+              <div class="p-4 rounded-xl border border-gray-700 peer-checked:border-amber-500 peer-checked:bg-amber-500/5 transition-all">
+                <div class="font-semibold">EMI Options</div>
+                <div class="text-sm text-gray-400">3-6 months</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        
         <div class="pt-4 border-t border-gray-700">
           <div class="flex justify-between mb-2"><span class="text-gray-400">Course Fee</span><span id="courseFee">Rs 15,000</span></div>
           <div class="flex justify-between mb-2"><span class="text-gray-400">Discount</span><span class="text-emerald-400" id="discount">- Rs 1,500</span></div>
@@ -576,14 +597,10 @@
     
     // PASTE YOUR ACTUAL CLERK PUBLISHABLE KEY HERE
     const CLERK_PUBLISHABLE_KEY = 'pk_test_cG9wdWxhci1wZWdhc3VzLTg5LmNsZXJrLmFjY291bnRzLmRldiQ'; 
-
-    // This is your website (where users end up AFTER login)
-    // You set this in Clerk: Configure > Paths > Home URL
-    const HOME_URL = 'https://foundation.acadapp.in'; 
-
+    
     // UPDATE THESE URLs if they are different in your Clerk Dashboard
-    const CLERK_SIGN_IN_URL = 'https://acad-foundation-courses-acadcoachingcenter-1319s-projects.vercel.app/sign-in';
-    const CLERK_SIGN_UP_URL = 'https://acad-foundation-courses-acadcoachingcenter-1319s-projects.vercel.app/sign-in';
+    const CLERK_SIGN_IN_URL = 'https://popular-pegasus-89.accounts.dev/sign-in';
+    const CLERK_SIGN_UP_URL = 'https://popular-pegasus-89.accounts.dev/sign-up';
     
     const API_ENDPOINT = '/api/chat';
     const PAYU_PAYMENT_LINK = 'https://pmny.in/xJuAmT6XgxX7';
@@ -593,12 +610,12 @@
     // ==========================================
     
     const classData = [
-      { id: 6, name: 'Class 6', subjects: ['Maths', 'Science'], fee: 3000, color: '#f59e0b' },
-      { id: 7, name: 'Class 7', subjects: ['Maths', 'Science'], fee: 3000, color: '#10b981' },
-      { id: 8, name: 'Class 8', subjects: ['Maths', 'Science', 'Foundation'], fee: 4000, color: '#3b82f6' },
-      { id: 9, name: 'Class 9', subjects: ['Maths', 'Science', 'Foundation'], fee: 4000, color: '#8b5cf6' },
-      { id: 10, name: 'Class 10', subjects: ['Board Prep', 'NEET/JEE'], fee: 4000, color: '#ec4899' },
-      { id: 11, name: 'Class 11', subjects: ['Physics', 'Chemistry', 'Maths'], fee: 5000, color: '#14b8a6' },
+      { id: 6, name: 'Class 6', subjects: ['Maths', 'Science'], fee: 4000, color: '#f59e0b' },
+      { id: 7, name: 'Class 7', subjects: ['Maths', 'Science'], fee: 4000, color: '#10b981' },
+      { id: 8, name: 'Class 8', subjects: ['Maths', 'Science', 'Foundation'], fee: 5000, color: '#3b82f6' },
+      { id: 9, name: 'Class 9', subjects: ['Maths', 'Science', 'Foundation'], fee: 5000, color: '#8b5cf6' },
+      { id: 10, name: 'Class 10', subjects: ['Board Prep', 'NEET/JEE'], fee: 5500, color: '#ec4899' },
+      { id: 11, name: 'Class 11', subjects: ['Physics', 'Chemistry', 'Maths'], fee: 6000, color: '#14b8a6' },
       { id: 12, name: 'Class 12', subjects: ['Board Prep', 'Entrance'], fee: 6000, color: '#f97316' },
     ];
     
@@ -612,8 +629,6 @@
     // CLERK SESSION HANDLING (Silent)
     // ==========================================
     
-    // This function only runs if the script actually loads.
-    // It will update the 'Login' button to 'Logout' if the user is already signed in.
     async function checkClerkSession() {
       if (!window.Clerk || CLERK_PUBLISHABLE_KEY === 'pk_test_cG9wdWxhci1wZWdhc3VzLTg5LmNsZXJrLmFjY291bnRzLmRldiQ') return;
   
@@ -621,11 +636,9 @@
         await window.Clerk.load({ publishableKey: CLERK_PUBLISHABLE_KEY });
         
         if (window.Clerk.user) {
-          // User IS logged in
           const loginBtn = document.getElementById('loginBtn');
           const signUpBtn = document.getElementById('signUpBtn');
           
-          // Change buttons to Logout
           if(loginBtn) {
             loginBtn.href = "#";
             loginBtn.textContent = "Logout";
@@ -636,21 +649,18 @@
             };
           }
           
-          // Hide Sign Up button
           if(signUpBtn) signUpBtn.style.display = 'none';
           
-          // Pre-fill payment form
           const studentEmail = document.getElementById('studentEmail');
           const studentName = document.getElementById('studentName');
           if(studentEmail) studentEmail.value = window.Clerk.user.primaryEmailAddress.emailAddress;
           if(studentName) studentName.value = window.Clerk.user.fullName;
         }
       } catch (err) {
-        console.warn("Clerk session check failed (likely blocked by browser):", err);
+        console.warn("Clerk session check failed:", err);
       }
     }
   
-    // Wait for load then check
     window.addEventListener('load', () => {
       setTimeout(checkClerkSession, 500);
     });
@@ -756,7 +766,17 @@
     }
     
     function closePaymentModal() { document.getElementById('paymentOverlay').classList.remove('open'); document.getElementById('paymentModal').classList.remove('open'); }
-    function updatePaymentAmount(fee) { const plan = document.querySelector('input[name="paymentPlan"]:checked').value; const discount = plan === 'full' ? Math.round(fee * 0.1) : 0; const total = fee - discount; document.getElementById('courseFee').textContent = `Rs ${fee.toLocaleString()}`; document.getElementById('discount').textContent = discount > 0 ? `- Rs ${discount.toLocaleString()}` : 'Rs 0'; document.getElementById('totalAmount').textContent = `Rs ${total.toLocaleString()}`; }
+    
+    // FIXED: Added safety check for payment plan
+    function updatePaymentAmount(fee) { 
+      const radio = document.querySelector('input[name="paymentPlan"]:checked');
+      const plan = radio ? radio.value : 'full'; // Default to full if missing
+      const discount = plan === 'full' ? Math.round(fee * 0.1) : 0; 
+      const total = fee - discount; 
+      document.getElementById('courseFee').textContent = `Rs ${fee.toLocaleString()}`; 
+      document.getElementById('discount').textContent = discount > 0 ? `- Rs ${discount.toLocaleString()}` : 'Rs 0'; 
+      document.getElementById('totalAmount').textContent = `Rs ${total.toLocaleString()}`; 
+    }
     
     function toggleChat() { chatOpen = !chatOpen; document.getElementById('chatWindow').classList.toggle('open', chatOpen); if (chatOpen && chatHistory.length === 0) { addBotMessage('Welcome to ACAD! How can I help?'); chatHistory.push({ role: 'assistant', content: 'Welcome!' }); } }
     function addBotMessage(text) { const container = document.getElementById('chatMessages'); const div = document.createElement('div'); div.className = 'flex gap-3'; div.innerHTML = `<img src="https://z-cdn-media.chatglm.cn/files/51622c02-6c73-46b3-9dd8-39ace4d36283.png" class="w-8 h-8 rounded-full bg-white p-0.5 object-contain flex-shrink-0"><div class="bg-gray-700/50 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[80%]"><p class="text-sm">${text}</p></div>`; container.appendChild(div); container.scrollTop = container.scrollHeight; }
@@ -775,8 +795,23 @@
       document.getElementById('enrollNavBtn').addEventListener('click', () => { document.getElementById('classes').scrollIntoView({ behavior: 'smooth' }); });
       document.getElementById('ctaEnrollBtn').addEventListener('click', () => { document.getElementById('classes').scrollIntoView({ behavior: 'smooth' }); });
       document.getElementById('paymentOverlay').addEventListener('click', closePaymentModal);
-      document.querySelectorAll('input[name="paymentPlan"]').forEach(radio => { radio.addEventListener('change', () => { if (selectedClass) updatePaymentAmount(selectedClass.fee); }); });
-      document.getElementById('paymentForm').addEventListener('submit', (e) => { e.preventDefault(); localStorage.setItem('acad_enrollment', JSON.stringify({ studentName: document.getElementById('studentName').value, email: document.getElementById('studentEmail').value, selectedClass: selectedClass?.name, fee: selectedClass?.fee })); window.open(PAYU_PAYMENT_LINK, '_blank'); closePaymentModal(); });
+      
+      // Fixed: Safely attach listeners to payment radios
+      document.querySelectorAll('input[name="paymentPlan"]').forEach(radio => { 
+        radio.addEventListener('change', () => { if (selectedClass) updatePaymentAmount(selectedClass.fee); }); 
+      });
+      
+      document.getElementById('paymentForm').addEventListener('submit', (e) => { 
+        e.preventDefault(); 
+        localStorage.setItem('acad_enrollment', JSON.stringify({ 
+          studentName: document.getElementById('studentName').value, 
+          email: document.getElementById('studentEmail').value, 
+          selectedClass: selectedClass?.name, 
+          fee: selectedClass?.fee 
+        })); 
+        window.open(PAYU_PAYMENT_LINK, '_blank'); 
+        closePaymentModal(); 
+      });
       document.getElementById('chatToggle').addEventListener('click', toggleChat);
       document.getElementById('closeChat').addEventListener('click', toggleChat);
       document.getElementById('chatForm').addEventListener('submit', handleChatSubmit);
