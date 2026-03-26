@@ -651,20 +651,34 @@
   // CLERK LOADER (Wait for script to load)
   // ==========================================
   
+  
   async function loadClerk() {
-    // Safety check: Did you paste the key?
+    // 1. Check Key
     if (CLERK_PUBLISHABLE_KEY === 'pk_test_cG9wdWxhci1wZWdhc3VzLTg5LmNsZXJrLmFjY291bnRzLmRldiQ' || CLERK_PUBLISHABLE_KEY === 'pk_test_cG9wdWxhci1wZWdhc3VzLTg5LmNsZXJrLmFjY291bnRzLmRldiQ') {
-      console.error("ERROR: You have not pasted your Clerk Publishable Key in the code.");
-      alert("Configuration Error: Clerk API Key is missing. Please edit index.html and paste your key.");
+      console.error("ERROR: Clerk Key is missing.");
+      alert("Configuration Error: The Clerk API Key is missing in index.html.");
       return;
     }
 
-    // Wait for window.Clerk to exist (Polling)
-    while (!window.Clerk) {
+    console.log("Waiting for Clerk SDK to load...");
+
+    // 2. Wait for Clerk (Max 10 seconds)
+    let retries = 0;
+    while (!window.Clerk && retries < 100) {
       await new Promise(resolve => setTimeout(resolve, 100));
+      retries++;
     }
 
-    // Now Clerk is loaded, initialize it
+    // 3. Handle Failure
+    if (!window.Clerk) {
+      console.error("Clerk SDK failed to load. Check if an AdBlocker or Browser Privacy setting is blocking jsdelivr.net.");
+      alert("Login System failed to load. Please disable AdBlockers or try Google Chrome.");
+      return;
+    }
+
+    console.log("Clerk SDK found. Initializing...");
+
+    // 4. Initialize
     try {
       await window.Clerk.load({
         publishableKey: CLERK_PUBLISHABLE_KEY
@@ -673,10 +687,17 @@
       updateAuthUI();
       window.Clerk.addListener(() => updateAuthUI());
     } catch (err) {
-      console.error("Clerk failed to load:", err);
+      console.error("Clerk failed to initialize:", err);
+      alert("Clerk Error: " + err.message);
     }
   }
 
+
+
+
+
+
+  
   // Start loading immediately
   loadClerk();
 
