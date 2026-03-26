@@ -831,8 +831,25 @@
     }
     
     async function signInWithGoogle() {
-      if(clerk) await clerk.authenticateWithRedirect({ strategy: 'oauth_google', redirectUrl: window.location.href });
+  if (!window.Clerk) {
+    alert("Authentication system is not ready. Please wait a moment and try again.");
+    return;
+  }
+  try {
+    // This redirects the user to Google, then back to your site
+    await window.Clerk.authenticateWithRedirect({
+      strategy: 'oauth_google',
+      redirectUrl: window.location.origin, // Redirect back to home
+      redirectUrlComplete: window.location.origin // After login, stay on home
+    });
+  } catch (err) {
+    console.error("Google Sign In Error:", err);
+    // If the error is about the key, alert the user
+    if(err.message.includes('publishableKey')) {
+        alert("Configuration Error: The Publishable Key is missing in the code.");
     }
+  }
+}
     
     async function signInWithGithub() {
       if(clerk) await clerk.authenticateWithRedirect({ strategy: 'oauth_github', redirectUrl: window.location.href });
